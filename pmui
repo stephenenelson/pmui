@@ -1,12 +1,22 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite;
+use lib "$ENV{'HOME'}/dev/Video-PlaybackMachine/lib";
+use Video::PlaybackMachine::Schema;
 
-# Documentation browser under "/perldoc"
-plugin 'PODRenderer';
+our $Database_Name = "$ENV{'HOME'}/dev/Video-PlaybackMachine/bin/test.db";
 
 get '/' => sub {
   my $self = shift;
-  $self->render('index');
+  
+  my $schedule_name = $self->param('schedulename') // 'Test Schedule';
+  
+  my $schema = Video::PlaybackMachine::Schema->connect("dbi:SQLite:dbname=$Database_Name", '', '');
+
+  my $schedule = $schema->resultset('Schedule')->find({ name => $schedule_name });
+  
+  $self->render('index',
+  	schedule => $schedule
+  );
 };
 
 app->start;
@@ -15,7 +25,11 @@ __DATA__
 @@ index.html.ep
 % layout 'default';
 % title 'Welcome';
-Welcome to the Mojolicious real-time web framework!
+Schedule is <%= $schedule->name() %>
+
+% foreach my $entry ( $schedule->schedule_entries() ) {
+<p><%= $entry->start_time %>, <%= $entry->mrl() %></p>
+% }
 
 @@ layouts/default.html.ep
 <!DOCTYPE html>
