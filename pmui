@@ -36,11 +36,18 @@ __DATA__
 @@ index.html.ep
 % layout 'default';
 % title 'Welcome';
-Schedule is <%= $schedule->name() %>
+<h2><%= $schedule->name() %></h2>
 
+<table>
+<tr><th>Start</th><th>Title</th><th>End</th></tr>
 % foreach my $entry ( $schedule->schedule_entries_in_order() ) {
-<p><%= timefmt( $entry->start_time ) %>, <%= $entry->movie_info->title() %></p>
+<tr>
+<td><%= timefmt( $entry->start_time ) %></td>
+<td><%= $entry->movie_info->title() %></td>
+<td><%= timefmt( $entry->schedule_entry_end->stop_time ) %></td>
+</tr>
 % }
+</table>
 
 @@ layouts/default.html.ep
 <!DOCTYPE html>
