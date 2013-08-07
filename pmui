@@ -2,6 +2,7 @@
 use Mojolicious::Lite;
 use lib "$ENV{'HOME'}/dev/Video-PlaybackMachine/lib";
 use Video::PlaybackMachine::Schema;
+use Video::PlaybackMachine::DirectoryScanner;
 use DateTime;
 
 our $Database_Name = "$ENV{'HOME'}/dev/Video-PlaybackMachine/bin/test.db";
@@ -22,12 +23,24 @@ get '/' => sub {
   my $schedule_name = $self->param('schedulename') // 'Test Schedule';
   
   my $schema = Video::PlaybackMachine::Schema->connect("dbi:SQLite:dbname=$Database_Name", '', '');
+  
+  my $scanner = Video::PlaybackMachine::DirectoryScanner->new(
+  	directories => [ '/media/psf/Home/Movies/playback_machine' ],
+  	schedule_name => $schedule_name,
+  	schema => $schema
+  );
+  
+  $scanner->scan();
 
   my $schedule = $schema->resultset('Schedule')->find({ name => $schedule_name });
   
-  $self->render('index',
-  	schedule => $schedule
-  );
+  $self->stash('schedule', $schedule);
+  
+  my $movie_info_rs = $schema->resultset('MovieInfo');
+  
+  $self->stash('movies', $movie_info_rs );
+  
+  $self->render('index');
 };
 
 app->start;
@@ -48,6 +61,11 @@ __DATA__
 </tr>
 % }
 </table>
+%= form_for add_movie => ( method => 'POST' ) => begin
+  %= select_field movie => [ map { [ $_->title => $_->mrl ] } $movies->all() ]
+  %= submit_button 'add'
+%end
+
 
 @@ layouts/default.html.ep
 <!DOCTYPE html>
