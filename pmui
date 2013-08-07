@@ -4,6 +4,7 @@ use lib "$ENV{'HOME'}/dev/Video-PlaybackMachine/lib";
 use Video::PlaybackMachine::Schema;
 use Video::PlaybackMachine::DirectoryScanner;
 use DateTime;
+use DateTime::Format::DateParse;
 
 our $Database_Name = "$ENV{'HOME'}/dev/Video-PlaybackMachine/bin/test.db";
 
@@ -43,6 +44,35 @@ get '/' => sub {
   $self->render('index');
 };
 
+post '/add_movie' => sub {
+	my $self = shift;
+	
+	$self->param('start_time') or die "No start time";
+	
+	my $start_time_dt = DateTime::Format::DateParse->parse_datetime( $self->param( 'start_time' ) )
+		or die "Invalid start time ", $self->param('start_time');
+			
+  my $mrl = $self->param('movie') or die "No MRL";
+	
+  my $schedule_name = $self->param('schedulename') // 'Test Schedule';
+  
+  my $schema = Video::PlaybackMachine::Schema->connect("dbi:SQLite:dbname=$Database_Name", '', '');
+  
+  my $schedule = $schema->resultset('Schedule')->find({ name => $schedule_name });
+  
+  $schema->txn_do(sub {
+  
+	  my $movie_info = $schema->resultset('MovieInfo')->find({mrl => $mrl})
+		or die "Couldn't find movie for mrl '$mrl'";
+  
+	  my $schedule_row = $schema->resultset('ScheduleEntry')->create({ 'start_time' => $start_time_dt->epoch(), mrl => $mrl, schedule_id => $schedule->schedule_id });
+	  
+	  my $schedule_end_row = $schema->resultset('ScheduleEntryEnd')->create({ 'stop_time' => $start_time_dt->epoch() + $movie_info->duration(), schedule_entry_id => $schedule_row->schedule_entry_id() });
+  });
+  
+  $self->redirect_to('/');
+};
+
 app->start;
 __DATA__
 
@@ -62,6 +92,7 @@ __DATA__
 % }
 </table>
 %= form_for add_movie => ( method => 'POST' ) => begin
+  %= datetime_field 'start_time'
   %= select_field movie => [ map { [ $_->title => $_->mrl ] } $movies->all() ]
   %= submit_button 'add'
 %end
