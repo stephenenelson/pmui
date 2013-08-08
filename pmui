@@ -48,9 +48,9 @@ helper 'scanner' => sub {
     my $self = shift;
 
     my $scanner = Video::PlaybackMachine::DirectoryScanner->new(
-        directories   => [ $self->config->movies() ],
-        schedule_name => $self->config->schedule(),
-        schema        => $self->schema()
+        'directories'   => [ $self->config->movies() ],
+        'schedule_name' => $self->config->schedule(),
+        'schema'        => $self->schema()
     );
     return $scanner;
 };
@@ -97,9 +97,9 @@ post '/add_movie' => sub {
             my $schedule_row =
               $self->schema->resultset('ScheduleEntry')->create(
                 {
-                    'start_time' => $start_time_dt->epoch(),
-                    mrl          => $mrl,
-                    schedule_id  => $self->schedule->schedule_id
+                    'start_time'  => $start_time_dt->epoch(),
+                    'mrl'         => $mrl,
+                    'schedule_id' => $self->schedule->schedule_id
                 }
               );
 
@@ -108,7 +108,7 @@ post '/add_movie' => sub {
                 {
                     'stop_time' => $start_time_dt->epoch() +
                       $movie_info->duration(),
-                    schedule_entry_id => $schedule_row->schedule_entry_id()
+                    'schedule_entry_id' => $schedule_row->schedule_entry_id()
                 }
               );
         }
