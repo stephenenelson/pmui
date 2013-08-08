@@ -78,7 +78,7 @@ __DATA__
 
 @@ index.html.ep
 % layout 'default';
-% title 'Welcome';
+% title 'PM Scheduler';
 <h2><%= $schedule->name() %></h2>
 
 <table>
