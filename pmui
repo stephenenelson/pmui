@@ -87,12 +87,23 @@ post '/add_movie' => sub {
       or die "Invalid start time ", $self->param('start_time');
 
     my $mrl = $self->param('movie') or die "No MRL";
+    
+	my $movie_info = $self->movieinfo->find( { mrl => $mrl } )
+	  or die "Couldn't find movie for mrl '$mrl'";
+
+    my @conflicts = $self->schedule->movie_conflicts( 
+    	$start_time_dt->epoch(),
+    	$movie_info->duration()
+    );
+    
+    if (scalar @conflicts) {
+		die "Movie '" . $movie_info->title() . "' conflicts with: ",
+			join(', ', map { $_->mrl() } @conflicts ),
+			"\n";
+    }
 
     $self->schema->txn_do(
         sub {
-
-            my $movie_info = $self->movieinfo->find( { mrl => $mrl } )
-              or die "Couldn't find movie for mrl '$mrl'";
 
             my $schedule_row =
               $self->schema->resultset('ScheduleEntry')->create(
