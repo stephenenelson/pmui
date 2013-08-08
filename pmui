@@ -10,7 +10,7 @@ use Video::PlaybackMachine::Config;
 
 app->secret('aeHeer8e');
 
-helper 'config' => sub {
+helper 'pmconfig' => sub {
     return Video::PlaybackMachine::Config->config();
 };
 
@@ -20,7 +20,7 @@ helper 'timefmt' => sub {
 
     my $dt = DateTime->from_epoch( epoch => $raw_time );
 
-    $dt->set_time_zone( $self->config->time_zone() );
+    $dt->set_time_zone( $self->pmconfig->time_zone() );
     return $dt->ymd . " " . $dt->hms;
 };
 
@@ -28,7 +28,7 @@ helper 'schema' => sub {
     my $self = shift;
 
     my $schema = Video::PlaybackMachine::Schema->connect(
-        "dbi:SQLite:dbname=" . $self->config->database(),
+        "dbi:SQLite:dbname=" . $self->pmconfig->database(),
         '', '' );
 
     return $schema;
@@ -37,7 +37,7 @@ helper 'schema' => sub {
 helper 'schedule' => sub {
     my $self = shift;
 
-    my $schedule_name = $self->param('schedulename') // $self->config->schedule;
+    my $schedule_name = $self->param('schedulename') // $self->pmconfig->schedule;
     my $schedule =
       $self->schema->resultset('Schedule')->find( { name => $schedule_name } );
     return $schedule;
@@ -48,8 +48,8 @@ helper 'scanner' => sub {
     my $self = shift;
 
     my $scanner = Video::PlaybackMachine::DirectoryScanner->new(
-        'directories'   => [ $self->config->movies() ],
-        'schedule_name' => $self->config->schedule(),
+        'directories'   => [ $self->pmconfig->movies() ],
+        'schedule_name' => $self->pmconfig->schedule(),
         'schema'        => $self->schema()
     );
     return $scanner;
@@ -83,7 +83,7 @@ post '/schedule_entry' => sub {
 
     my $start_time_dt =
       DateTime::Format::DateParse->parse_datetime( $self->param('start_time'),
-        $self->config->time_zone() )
+        $self->pmconfig->time_zone() )
       or die "Invalid start time ", $self->param('start_time');
 
     my $mrl = $self->param('movie') or die "No MRL";
