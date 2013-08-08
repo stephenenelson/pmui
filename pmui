@@ -128,6 +128,25 @@ post '/schedule_entry' => sub {
     $self->redirect_to('/');
 };
 
+post '/delete_schedule_entry' => sub {
+	my $self = shift;
+
+	my $entry_id = $self->param('schedule_entry_id')
+		or die "Param 'schedule_entry_id' required\n";
+	
+	$self->schema->txn_do(sub {
+	
+		my $entry = $self->schema()->resultset('ScheduleEntry')->find( $entry_id )
+			or die "Couldn't find schedule entry ID '$entry_id'";
+	
+		$entry->delete();
+
+	});
+	
+	$self->redirect_to('/');
+	
+};
+
 app->start;
 __DATA__
 
@@ -137,12 +156,18 @@ __DATA__
 <h2><%= $schedule->name() %></h2>
 
 <table>
-<tr><th>Start</th><th>Title</th><th>End</th></tr>
+<tr><th>Start</th><th>Title</th><th>End</th><td>&nbsp;</td></tr>
 % foreach my $entry ( $schedule->schedule_entries_in_order() ) {
 <tr>
 <td><%= timefmt( $entry->start_time ) %></td>
 <td><%= $entry->movie_info->title() %></td>
 <td><%= timefmt( $entry->schedule_entry_end->stop_time ) %></td>
+<td>
+%= form_for '/delete_schedule_entry' => ( method => 'POST' ) => begin
+  %= hidden_field 'schedule_entry_id' => $entry->schedule_entry_id()
+  %= submit_button '-'
+%end
+</td>
 </tr>
 % }
 </table>
