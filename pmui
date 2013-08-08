@@ -11,91 +11,110 @@ use Video::PlaybackMachine::Config;
 app->secret('aeHeer8e');
 
 helper 'config' => sub {
-	return Video::PlaybackMachine::Config->config();
+    return Video::PlaybackMachine::Config->config();
 };
 
 helper 'timefmt' => sub {
-	my $self = shift;
-	my ($raw_time) = @_;
-	
-	my $dt = DateTime->from_epoch( epoch => $raw_time );
-	
-	$dt->set_time_zone( $self->config->time_zone() );
-	return $dt->ymd . " " . $dt->hms;
+    my $self = shift;
+    my ($raw_time) = @_;
+
+    my $dt = DateTime->from_epoch( epoch => $raw_time );
+
+    $dt->set_time_zone( $self->config->time_zone() );
+    return $dt->ymd . " " . $dt->hms;
 };
 
 helper 'schema' => sub {
-	my $self = shift;
+    my $self = shift;
 
-  my $schema = Video::PlaybackMachine::Schema->connect(
-  	"dbi:SQLite:dbname=" . $self->config->database(), 
-  '', '');
-  
-	return $schema;
+    my $schema = Video::PlaybackMachine::Schema->connect(
+        "dbi:SQLite:dbname=" . $self->config->database(),
+        '', '' );
+
+    return $schema;
 };
 
 helper 'schedule' => sub {
-  my $self = shift;
+    my $self = shift;
 
-  my $schedule_name = $self->param('schedulename') // $self->config->schedule;
-  my $schedule = $self->schema->resultset('Schedule')->find({ name => $schedule_name });
-  return $schedule;
-    
+    my $schedule_name = $self->param('schedulename') // $self->config->schedule;
+    my $schedule =
+      $self->schema->resultset('Schedule')->find( { name => $schedule_name } );
+    return $schedule;
+
 };
 
 helper 'scanner' => sub {
-	my $self = shift;
+    my $self = shift;
 
-  my $scanner = Video::PlaybackMachine::DirectoryScanner->new(
-  	directories => [ $self->config->movies() ],
-  	schedule_name => $self->config->schedule(),
-  	schema => $self->schema()
-  );
-  return $scanner;
+    my $scanner = Video::PlaybackMachine::DirectoryScanner->new(
+        directories   => [ $self->config->movies() ],
+        schedule_name => $self->config->schedule(),
+        schema        => $self->schema()
+    );
+    return $scanner;
 };
 
 helper 'movieinfo' => sub {
-	my $self = shift;
-	
-	my $movie_info_rs = $self->schema->resultset('MovieInfo');
-	
-	return $movie_info_rs;
+    my $self = shift;
+
+    my $movie_info_rs = $self->schema->resultset('MovieInfo');
+
+    return $movie_info_rs;
 
 };
 
 get '/' => sub {
-  my $self = shift;
-  
-  $self->scanner()->scan();
-  
-  $self->stash('schedule', $self->schedule() );  
-  
-  $self->stash('movies', $self->movieinfo() );
-  
-  $self->render('index');
+    my $self = shift;
+
+    $self->scanner()->scan();
+
+    $self->stash( 'schedule', $self->schedule() );
+
+    $self->stash( 'movies', $self->movieinfo() );
+
+    $self->render('index');
 };
 
 post '/add_movie' => sub {
-	my $self = shift;
-	
-	$self->param('start_time') or die "No start time";
-	
-	my $start_time_dt = DateTime::Format::DateParse->parse_datetime( $self->param( 'start_time' ), $self->config->time_zone() )
-		or die "Invalid start time ", $self->param('start_time');
-			
-  my $mrl = $self->param('movie') or die "No MRL";
-    
-  $self->schema->txn_do(sub {
-  
-	  my $movie_info = $self->movieinfo->find({mrl => $mrl})
-		or die "Couldn't find movie for mrl '$mrl'";
-  
-	  my $schedule_row = $self->schema->resultset('ScheduleEntry')->create({ 'start_time' => $start_time_dt->epoch(), mrl => $mrl, schedule_id => $self->schedule->schedule_id });
-	  
-	  my $schedule_end_row = $self->schema->resultset('ScheduleEntryEnd')->create({ 'stop_time' => $start_time_dt->epoch() + $movie_info->duration(), schedule_entry_id => $schedule_row->schedule_entry_id() });
-  });
-  
-  $self->redirect_to('/');
+    my $self = shift;
+
+    $self->param('start_time') or die "No start time";
+
+    my $start_time_dt =
+      DateTime::Format::DateParse->parse_datetime( $self->param('start_time'),
+        $self->config->time_zone() )
+      or die "Invalid start time ", $self->param('start_time');
+
+    my $mrl = $self->param('movie') or die "No MRL";
+
+    $self->schema->txn_do(
+        sub {
+
+            my $movie_info = $self->movieinfo->find( { mrl => $mrl } )
+              or die "Couldn't find movie for mrl '$mrl'";
+
+            my $schedule_row =
+              $self->schema->resultset('ScheduleEntry')->create(
+                {
+                    'start_time' => $start_time_dt->epoch(),
+                    mrl          => $mrl,
+                    schedule_id  => $self->schedule->schedule_id
+                }
+              );
+
+            my $schedule_end_row =
+              $self->schema->resultset('ScheduleEntryEnd')->create(
+                {
+                    'stop_time' => $start_time_dt->epoch() +
+                      $movie_info->duration(),
+                    schedule_entry_id => $schedule_row->schedule_entry_id()
+                }
+              );
+        }
+    );
+
+    $self->redirect_to('/');
 };
 
 app->start;
