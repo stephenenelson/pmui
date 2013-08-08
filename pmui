@@ -1,14 +1,18 @@
 #!/usr/bin/env perl
 use Mojolicious::Lite;
 use lib "$ENV{'HOME'}/dev/Video-PlaybackMachine/lib";
+
 use Video::PlaybackMachine::Schema;
 use Video::PlaybackMachine::DirectoryScanner;
 use DateTime;
 use DateTime::Format::DateParse;
-
-our $Database_Name = "$ENV{'HOME'}/dev/Video-PlaybackMachine/bin/test.db";
+use Video::PlaybackMachine::Config;
 
 app->secret('aeHeer8e');
+
+helper 'config' => sub {
+	return Video::PlaybackMachine::Config->config();
+};
 
 helper 'timefmt' => sub {
 	my $self = shift;
@@ -16,32 +20,57 @@ helper 'timefmt' => sub {
 	
 	my $dt = DateTime->from_epoch( epoch => $raw_time );
 	
-	$dt->set_time_zone('America/Los_Angeles');
+	$dt->set_time_zone( $self->config->time_zone() );
 	return $dt->ymd . " " . $dt->hms;
+};
+
+helper 'schema' => sub {
+	my $self = shift;
+
+  my $schema = Video::PlaybackMachine::Schema->connect(
+  	"dbi:SQLite:dbname=" . $self->config->database(), 
+  '', '');
+  
+	return $schema;
+};
+
+helper 'schedule' => sub {
+  my $self = shift;
+
+  my $schedule_name = $self->param('schedulename') // $self->config->schedule;
+  my $schedule = $self->schema->resultset('Schedule')->find({ name => $schedule_name });
+  return $schedule;
+    
+};
+
+helper 'scanner' => sub {
+	my $self = shift;
+
+  my $scanner = Video::PlaybackMachine::DirectoryScanner->new(
+  	directories => [ $self->config->movies() ],
+  	schedule_name => $self->config->schedule(),
+  	schema => $self->schema()
+  );
+  return $scanner;
+};
+
+helper 'movieinfo' => sub {
+	my $self = shift;
+	
+	my $movie_info_rs = $self->schema->resultset('MovieInfo');
+	
+	return $movie_info_rs;
+
 };
 
 get '/' => sub {
   my $self = shift;
   
-  my $schedule_name = $self->param('schedulename') // 'Test Schedule';
+  $self->scanner()->scan();
   
-  my $schema = Video::PlaybackMachine::Schema->connect("dbi:SQLite:dbname=$Database_Name", '', '');
+  $self->stash('schedule', $self->schedule() );  
   
-  my $scanner = Video::PlaybackMachine::DirectoryScanner->new(
-  	directories => [ '/media/psf/Home/Movies/playback_machine' ],
-  	schedule_name => $schedule_name,
-  	schema => $schema
-  );
-  
-  $scanner->scan();
-
-  my $schedule = $schema->resultset('Schedule')->find({ name => $schedule_name });
-  
-  $self->stash('schedule', $schedule);
-  
-  my $movie_info_rs = $schema->resultset('MovieInfo');
-  
-  $self->stash('movies', $movie_info_rs );
+  $self->stash('movies', $self->movieinfo() );
   
   $self->render('index');
 };
@@ -51,25 +80,19 @@ post '/add_movie' => sub {
 	
 	$self->param('start_time') or die "No start time";
 	
-	my $start_time_dt = DateTime::Format::DateParse->parse_datetime( $self->param( 'start_time' ), 'America/Los_Angeles' )
+	my $start_time_dt = DateTime::Format::DateParse->parse_datetime( $self->param( 'start_time' ), $self->config->time_zone() )
 		or die "Invalid start time ", $self->param('start_time');
 			
   my $mrl = $self->param('movie') or die "No MRL";
-	
-  my $schedule_name = $self->param('schedulename') // 'Test Schedule';
+    
+  $self->schema->txn_do(sub {
   
-  my $schema = Video::PlaybackMachine::Schema->connect("dbi:SQLite:dbname=$Database_Name", '', '');
-  
-  my $schedule = $schema->resultset('Schedule')->find({ name => $schedule_name });
-  
-  $schema->txn_do(sub {
-  
-	  my $movie_info = $schema->resultset('MovieInfo')->find({mrl => $mrl})
+	  my $movie_info = $self->movieinfo->find({mrl => $mrl})
 		or die "Couldn't find movie for mrl '$mrl'";
   
-	  my $schedule_row = $schema->resultset('ScheduleEntry')->create({ 'start_time' => $start_time_dt->epoch(), mrl => $mrl, schedule_id => $schedule->schedule_id });
+	  my $schedule_row = $self->schema->resultset('ScheduleEntry')->create({ 'start_time' => $start_time_dt->epoch(), mrl => $mrl, schedule_id => $self->schedule->schedule_id });
 	  
-	  my $schedule_end_row = $schema->resultset('ScheduleEntryEnd')->create({ 'stop_time' => $start_time_dt->epoch() + $movie_info->duration(), schedule_entry_id => $schedule_row->schedule_entry_id() });
+	  my $schedule_end_row = $self->schema->resultset('ScheduleEntryEnd')->create({ 'stop_time' => $start_time_dt->epoch() + $movie_info->duration(), schedule_entry_id => $schedule_row->schedule_entry_id() });
   });
   
   $self->redirect_to('/');
