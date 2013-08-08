@@ -71,7 +71,7 @@ get '/' => sub {
 
     $self->stash( 'schedule', $self->schedule() );
 
-    $self->stash( 'movies', $self->movieinfo() );
+    $self->stash( 'movies', $self->movieinfo()->search_rs(undef, { 'order_by' => 'title' } ) );
 
     $self->render('index');
 };
