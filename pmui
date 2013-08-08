@@ -49,7 +49,7 @@ post '/add_movie' => sub {
 	
 	$self->param('start_time') or die "No start time";
 	
-	my $start_time_dt = DateTime::Format::DateParse->parse_datetime( $self->param( 'start_time' ) )
+	my $start_time_dt = DateTime::Format::DateParse->parse_datetime( $self->param( 'start_time' ), 'America/Los_Angeles' )
 		or die "Invalid start time ", $self->param('start_time');
 			
   my $mrl = $self->param('movie') or die "No MRL";
