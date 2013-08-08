@@ -76,7 +76,7 @@ get '/' => sub {
     $self->render('index');
 };
 
-post '/add_movie' => sub {
+post '/schedule_entry' => sub {
     my $self = shift;
 
     $self->param('start_time') or die "No start time";
@@ -146,7 +146,7 @@ __DATA__
 </tr>
 % }
 </table>
-%= form_for add_movie => ( method => 'POST' ) => begin
+%= form_for '/schedule_entry' => ( method => 'POST' ) => begin
   %= datetime_field 'start_time'
   %= select_field movie => [ map { [ $_->title => $_->mrl ] } $movies->all() ]
   %= submit_button 'add'
