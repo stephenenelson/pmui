@@ -8,6 +8,8 @@ use DateTime::Format::DateParse;
 
 our $Database_Name = "$ENV{'HOME'}/dev/Video-PlaybackMachine/bin/test.db";
 
+app->secret('aeHeer8e');
+
 helper 'timefmt' => sub {
 	my $self = shift;
 	my ($raw_time) = @_;
