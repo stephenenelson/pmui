@@ -86,4 +86,20 @@ sub delete_schedule_entry {
 	
 }
 
+sub schedule_json {
+	my $self = shift;
+	
+	my @entries = $self->schedule->search_related(
+		'schedule_entries', 
+		undef, 
+		{ 
+			'result_class' => 'DBIx::Class::ResultClass::HashRefInflator', 
+			'join' => ['movie_info', 'schedule_entry_end' ],
+			'prefetch' => ['movie_info', 'schedule_entry_end']
+		})
+		->all();
+	
+	$self->render(json => \@entries);
+}
+
 1;
