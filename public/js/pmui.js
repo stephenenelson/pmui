@@ -1,6 +1,6 @@
-angular.module("Pmui", []).
-	controller('PmuiCtrl', ['$scope', function ($scope) {
-		$scope.entries = [
-			{ "start_time": "123123", "movie_info": { "title": "Fnord" }, "schedule_entry_end": { "stop_time" : 1231234 } }
-		]
+'use strict';
+
+angular.module("Pmui", ['pmuiServices']).
+	controller('PmuiCtrl', ['$scope', 'Entry', function ($scope, Entry) {
+		$scope.entries = Entry.query();
 	}]);

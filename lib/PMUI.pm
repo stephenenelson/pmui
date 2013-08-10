@@ -79,6 +79,8 @@ sub startup {
 	$r->post('/schedule_entry')->to('schedule#schedule_entry');;
 
 	$r->post('/delete_schedule_entry')->to('schedule#delete_schedule_entry');
+	
+	$r->get('/schedule')->to('schedule#schedule_json');
 
 }
 
