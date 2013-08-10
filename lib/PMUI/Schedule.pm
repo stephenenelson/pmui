@@ -12,7 +12,7 @@ sub index {
 
 		$self->stash( 'movies', $self->movieinfo()->search_rs(undef, { 'order_by' => 'title' } ) );
 
-		$self->render('/schedule/index');
+		$self->render();
 }
 
 sub schedule_entry {
