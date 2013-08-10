@@ -6,10 +6,13 @@
 </script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular-resource.min.js" type="text/javascript">
 </script>
+  <script src="js/filters.js" type="text/javascript">
+</script>
   <script src="js/services.js" type="text/javascript">
 </script>
   <script src="js/pmui.js" type="text/javascript">
 </script>
+<script src="js/lib/moment.min.js" type="text/javascript"></script>
 
   <title>PMUI</title>
 </head>
@@ -27,11 +30,11 @@
       </tr>
 
       <tr ng-repeat="entry in entries">
-        <td>{{entry.start_time}}</td>
+        <td>{{entry.start_time | dateformat }}</td>
 
         <td>{{entry.movie_info.title}}</td>
 
-        <td>{{entry.schedule_entry_end.stop_time}}</td>
+        <td>{{entry.schedule_entry_end.stop_time | dateformat }}</td>
 
       </tr>
     </table>
