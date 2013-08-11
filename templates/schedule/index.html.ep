@@ -2,7 +2,7 @@
 % title 'PM Scheduler';
 <h2><%= $schedule->name() %></h2>
 
-<table>
+<table class="table-striped table">
 <tr><th>Start</th><th>Title</th><th>End</th><td>&nbsp;</td></tr>
 % foreach my $entry ( $schedule->schedule_entries_in_order() ) {
 <tr>
@@ -12,15 +12,15 @@
 <td>
 %= form_for '/delete_schedule_entry' => ( method => 'POST' ) => begin
   %= hidden_field 'schedule_entry_id' => $entry->schedule_entry_id()
-  %= submit_button '-'
+  <button type="submit" class="glyphicon glyphicon-trash"></button>
 %end
 </td>
 </tr>
 % }
 </table>
-%= form_for '/schedule_entry' => ( method => 'POST' ) => begin
-  %= datetime_field 'start_time'
-  %= select_field movie => [ map { [ $_->title => $_->mrl ] } $movies->all() ]
+%= form_for '/schedule_entry' => ( method => 'POST', class => 'form-inline' ) => begin
+  <input name="start_time" type="datetime" style="width: 20em;">
+  %= select_field movie => [ map { [ $_->title => $_->mrl ] } $movies->all() ], style => 'width: 30em'
   %= submit_button 'add'
 %end
 
