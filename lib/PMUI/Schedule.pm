@@ -86,6 +86,27 @@ sub delete_schedule_entry {
 	
 }
 
+sub delete_entry {
+	my $self = shift;
+
+	my $entry_id = $self->param('schedule_entry_id')
+		or die "Param 'schedule_entry_id' required\n";
+		
+	my $entry;
+
+	$self->schema->txn_do(sub {
+
+		$entry = $self->schema()->resultset('ScheduleEntry')->find( $entry_id )
+			or die "Couldn't find schedule entry ID '$entry_id'";
+
+		$entry->delete();
+
+	});
+	
+	$self->render('json' => $entry);
+
+}
+
 sub schedule_json {
 	my $self = shift;
 	
