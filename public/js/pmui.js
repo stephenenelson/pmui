@@ -5,6 +5,9 @@ angular.module("Pmui", ['pmuiServices', 'pmuiFilters']).
 		$scope.entries = Entry.query();
 		$scope.movies = Movie.query();
 		$scope.delete_entry = function(entry) {
-			entry.$delete();
+			entry.$delete({entryId: entry.schedule_entry_id},
+				function() {
+					$scope.entries.splice( $scope.entries.indexOf(entry), 1 );
+				});
 		};
 	}]);
