@@ -2,7 +2,7 @@
 
 <html ng-app="Pmui">
 <head>
-    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
     <link href="css/bootstrap-glyphicons.css" rel="stylesheet">
     <link href="css/pmui.css" rel="stylesheet">
 
@@ -19,6 +19,7 @@
   <script src="js/pmui.js" type="text/javascript">
 </script>
 <script src="js/lib/moment.min.js" type="text/javascript"></script>
+<script src="js/ui-bootstrap-tpls-0.5.0.js" type="text/javascript"></script>
 
   <title>PMUI</title>
 </head>
@@ -31,8 +32,6 @@
 
         <th>Title</th>
 
-        <th>End</th>
-
         <td>Action</td>
 
       </tr>
@@ -41,11 +40,19 @@
         <td>{{entry.start_time | dateformat }}</td>
 
         <td>{{entry.movie_info.title}}</td>
-
-        <td>{{entry.schedule_entry_end.stop_time | dateformat }}</td>
         
         <td><button ng-click="delete_entry(entry)" class="glyphicon glyphicon-trash"></button></td>
 
+      </tr>
+      
+      <tr>
+      	<td>
+			<div class="form-horizontal">
+				<input type="text" datepicker-popup="dd-MMMM-yyyy" ng-model="dt" open="opened" ng-required="true" />
+				<button class="btn" ng-click="open()"><i class="icon-calendar"></i></button>
+			</div>
+
+      	</td>
       </tr>
     </table>
     

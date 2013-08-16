@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module("Pmui", ['pmuiServices', 'pmuiFilters']).
-	controller('PmuiCtrl', ['$scope', 'Entry', 'Movie', function ($scope, Entry, Movie) {
+angular.module("Pmui", ['pmuiServices', 'pmuiFilters', 'ui.bootstrap']).
+	controller('PmuiCtrl', ['$scope', '$timeout', 'Entry', 'Movie', function ($scope, $timeout, Entry, Movie) {
 		$scope.entries = Entry.query();
 		$scope.movies = Movie.query();
 		$scope.delete_entry = function(entry) {
@@ -10,4 +10,14 @@ angular.module("Pmui", ['pmuiServices', 'pmuiFilters']).
 					$scope.entries.splice( $scope.entries.indexOf(entry), 1 );
 				});
 		};
+		$scope.dt = new Date();
+
+
+		$scope.open = function() {
+			$timeout(function() {
+			  $scope.opened = true;
+			});
+		  };
+
+		
 	}]);
