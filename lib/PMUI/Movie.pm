@@ -3,6 +3,8 @@ use Mojo::Base 'Mojolicious::Controller';
 
 sub query_movies {
 	my $self = shift;	
+
+    $self->scanner()->scan();
 	
 	my @movies = 
 		$self->movieinfo()
