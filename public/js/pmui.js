@@ -10,14 +10,5 @@ angular.module("Pmui", ['pmuiServices', 'pmuiFilters', 'ui.bootstrap']).
 					$scope.entries.splice( $scope.entries.indexOf(entry), 1 );
 				});
 		};
-		$scope.dt = new Date();
-
-
-		$scope.open = function() {
-			$timeout(function() {
-			  $scope.opened = true;
-			});
-		  };
-
 		
 	}]);
