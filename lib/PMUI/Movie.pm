@@ -15,3 +15,5 @@ sub query_movies {
 		
 	$self->render(json => \@movies);
 }
+
+1;

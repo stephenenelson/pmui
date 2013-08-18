@@ -82,6 +82,8 @@ sub startup {
 	
 	$r->get('/schedule')->to('schedule#schedule_json');
 	
+	$r->post('/schedule')->to('schedule#add_schedule_entry');
+	
 	$r->delete('/schedule/:schedule_entry_id')->to('schedule#delete_entry');
 	
 	$r->get('/movie')->to('movie#query_movies');

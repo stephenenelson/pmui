@@ -123,4 +123,36 @@ sub schedule_json {
 	$self->render(json => \@entries);
 }
 
+sub add_schedule_entry {
+	my $self = shift;
+	
+	my $data = $self->req->json;
+	
+	# To start, we'll assume the movie is in movie_info. 
+	my $movie = $self->schema()
+		->resultset('MovieInfo')
+		->find({ 'mrl' => $data->{'mrl'} });
+	
+	my $start_time = $data->{'start_time'} or die "No start time!\n";
+	
+	my @conflicts = $self->schedule->movie_conflicts(
+		$start_time,
+		$movie->duration()
+	);
+	
+	if (@conflicts) {
+		$self->render(status => 409, json => { 'conflicts' => \@conflicts });
+	}
+	else {
+		my $entry = $self->schedule->create_related(
+			'schedule_entries',
+			{
+				'start_time' => $start_time,
+				'mrl' => $data->{'mrl'}
+			}
+		);
+		$self->render( json => { $entry->get_columns() } );
+	}
+}
+
 1;
