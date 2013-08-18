@@ -24,7 +24,11 @@ angular.module("Pmui", ['pmuiServices', 'pmuiFilters', 'ui.bootstrap']).
 					}
 				}
 			);
-			d.open();
+			d.open().then(function( new_entry ) {
+				if (new_entry) {
+					$scope.entries.push(new_entry);
+				}
+			});
 		};
 		
 	}]).
@@ -41,8 +45,8 @@ angular.module("Pmui", ['pmuiServices', 'pmuiFilters', 'ui.bootstrap']).
 				mrl: $scope.current_mrl,
 				start_time: this_moment.unix()
 			});
-			new_entry.$save(function(success) {
-				dialog.close();
+			new_entry.$save(function(new_entry) {
+				dialog.close(new_entry);
 			})
 		};
 		
