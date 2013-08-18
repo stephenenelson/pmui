@@ -151,7 +151,19 @@ sub add_schedule_entry {
 				'mrl' => $data->{'mrl'}
 			}
 		);
-		$self->render( json => { $entry->get_columns() } );
+		
+		$entry->create_related(
+			'schedule_entry_end',
+			{
+				'stop_time' => $start_time + $movie->duration()
+			}
+		);
+		
+		my %entry_hash = $entry->get_columns();
+		$entry_hash{'movie_info'} = { $entry->movie_info()->get_columns() };
+		$entry_hash{'schedule_entry_end'} = { $entry->schedule_entry_end()->get_columns() };
+		
+		$self->render( json => \%entry_hash );
 	}
 }
 
