@@ -27,6 +27,7 @@ angular.module("Pmui", ['pmuiServices', 'pmuiFilters', 'ui.bootstrap']).
 			d.open().then(function( new_entry ) {
 				if (new_entry) {
 					$scope.entries.push(new_entry);
+					$scope.entries.sort(function(a,b) { return a.start_time - b.start_time } );
 				}
 			});
 		};
