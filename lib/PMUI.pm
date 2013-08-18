@@ -75,10 +75,6 @@ sub startup {
 	my $r = $self->routes();
 
 	$r->any('/')->to('schedule#index');
-
-	$r->post('/schedule_entry')->to('schedule#schedule_entry');;
-
-	$r->post('/delete_schedule_entry')->to('schedule#delete_schedule_entry');
 	
 	$r->get('/schedule')->to('schedule#schedule_json');
 	
