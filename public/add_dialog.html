@@ -1,27 +1,16 @@
-<div class="modal_header">
-<h3>Add Schedule Entry</h3>
-</div>
-<div class="modal_body">
+  <div class="modal_header">
+    <h3>Add Schedule Entry</h3>
+  </div>
 
-<p>
-<b>Title:</b>
-<select ng-model="current_mrl" ng-options="movie.mrl as movie.title for movie in movies" name="mrl"></select>
-</p>
+  <div class="modal_body">
+    <p><strong>Title:</strong> <select ng-model="current_mrl" ng-options="movie.mrl as movie.title for movie in movies" name="mrl">
+      </select></p>
 
-<p>
-<b>Date:</b>
-<input type="date" name="date" ng-model="current_date" placeholder="2013-01-01">
-</p>
+    <p><strong>Date:</strong> <input type="date" name="date" ng-model="current_date" placeholder="2013-01-01"></p>
 
-<p>
-<b>Time:</b>
-<input type="time" name="time" ng-model="current_time" placeholder="13:00 AM">
-</p>
+    <p><strong>Time:</strong> <input type="time" name="time" ng-model="current_time" placeholder="13:00 AM"></p>
+  </div>
 
-
-</div>
-
-<div class="modal_footer">
-<p><button ng-click="save_entry()" class="btn btn-primary" >Save</button>
-<button ng-click="close()" class="btn btn-primary" >Cancel</button></p>
-</div>
+  <div class="modal_footer">
+    <button ng-click="save_entry()" class="btn btn-primary">Save</button> <button ng-click="close()" class="btn btn-warning cancel">Cancel</button>
+  </div>
