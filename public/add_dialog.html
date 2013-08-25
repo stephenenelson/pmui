@@ -1,8 +1,9 @@
-  <div class="modal_header">
+<div class="container-fluid">
+  <div>
     <h3>Add Schedule Entry</h3>
   </div>
 
-  <div class="modal_body">
+  <div>
     <p><strong>Title:</strong> <select ng-model="current_mrl" ng-options="movie.mrl as movie.title for movie in movies" name="mrl">
       </select></p>
 
@@ -11,6 +12,7 @@
     <p><strong>Time:</strong> <input type="time" name="time" ng-model="current_time" placeholder="13:00 AM"></p>
   </div>
 
-  <div class="modal_footer">
-    <button ng-click="save_entry()" class="btn btn-primary">Save</button> <button ng-click="close()" class="btn btn-warning cancel">Cancel</button>
+  <div>
+    <p><button ng-click="save_entry()" class="btn btn-primary">Save</button> <button ng-click="close()" class="btn btn-warning cancel">Cancel</button></p>
   </div>
+</div>
